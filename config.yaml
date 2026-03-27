@@ -5,7 +5,7 @@ ui:
   title: "krisyotam.com Status"
   header: "Status"
   description: "Service status for krisyotam.com"
-  logo: "https://krisyotam.com/favicon.ico"
+  logo: "https://krisyotam.com/favicon.png"
 
 storage:
   type: sqlite
@@ -57,19 +57,20 @@ endpoints:
       - "[RESPONSE_TIME] < 5000"
       - "[CERTIFICATE_EXPIRATION] > 48h"
 
-  - name: Domain Expiration
-    group: dns
-    url: "https://krisyotam.com"
-    interval: 1h
+  - name: shop.krisyotam.com
+    group: websites
+    url: "https://shop.krisyotam.com"
+    interval: 1m
     conditions:
-      - "[DOMAIN_EXPIRATION] > 720h"
+      - "[STATUS] == 200"
+      - "[RESPONSE_TIME] < 5000"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
 
-  - name: DNS Resolution
-    url: "8.8.8.8"
-    group: dns
-    interval: 5m
-    dns:
-      query-name: "krisyotam.com"
-      query-type: "A"
+  - name: photos.krisyotam.com
+    group: websites
+    url: "https://photos.krisyotam.com"
+    interval: 1m
     conditions:
-      - "[DNS_RCODE] == NOERROR"
+      - "[STATUS] == 200"
+      - "[RESPONSE_TIME] < 5000"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
