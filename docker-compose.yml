@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  gatus:
+    image: twinproduction/gatus:latest
+    container_name: gatus-kris
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+      - gatus-data:/data
+    labels:
+      sg.owner: "kris"
+      sg.service-type: "gatus"
+      sg.service-group: "monitoring"
+      sg.subdomain: "status.krisyotam.com"
+
+volumes:
+  gatus-data:
