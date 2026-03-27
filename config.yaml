@@ -1,3 +1,6 @@
+web:
+  port: 8090
+
 ui:
   title: "krisyotam.com Status"
   header: "Status"
