@@ -1,107 +1,102 @@
-const sidebarWidths = [74, 58, 82, 66, 71, 54];
-const articleWidths = [100, 97, 94, 98, 86];
+import Link from 'next/link';
+import Image from 'next/image';
+import { AutoRefresh } from '@/components/auto-refresh';
+import { ClusterMatrix } from '@/components/cluster-matrix';
+import { StatusMark } from '@/components/status-mark';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { getStatusDashboard } from '@/lib/gatus';
 
-export default function Home() {
+export const revalidate = 30;
+
+function timezoneLabel() {
+  const part = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    timeZoneName: 'short',
+  })
+    .formatToParts(new Date())
+    .find(({ type }) => type === 'timeZoneName');
+  return part?.value ?? 'CT';
+}
+
+export default async function Home() {
+  const dashboard = await getStatusDashboard();
+  const activeIncident = dashboard.announcements.find(
+    (announcement) => !announcement.archived,
+  );
+
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[#fbfaf8] text-zinc-900">
-      <header
-        aria-hidden="true"
-        className="grid h-[76px] grid-cols-[1fr_auto_1fr] items-center border-b border-stone-200 bg-white/95 px-6 sm:px-14"
-      >
-        <div className="flex items-center gap-3">
-          <span className="h-9 w-9 rounded-full bg-stone-100" />
-          <span className="h-3.5 w-28 rounded-full bg-stone-100" />
-        </div>
-        <span className="hidden h-9 w-[min(30vw,420px)] rounded-xl bg-stone-100 sm:block" />
-        <div className="flex items-center justify-end gap-3">
-          <span className="hidden h-9 w-9 rounded-full bg-stone-100 sm:block" />
-          <span className="h-9 w-24 rounded-xl bg-stone-100" />
+    <>
+      <AutoRefresh fetchedAt={dashboard.fetchedAt} />
+      <header className="site-header">
+        <div className="header-inner">
+          <Link className="brand" href="/" aria-label="Service Status home">
+            <Image src="/favicon.png" alt="" width="30" height="30" priority />
+            <span>Service Status</span>
+          </Link>
+          <nav className="utility-nav" aria-label="Status utilities">
+            <span className="utility-pill">
+              Time: {timezoneLabel()}
+              <span className="clock-mark" aria-hidden="true" />
+            </span>
+            <Link className="utility-pill rss-link" href="/feed.xml">
+              RSS Feed <span aria-hidden="true">◔</span>
+            </Link>
+            <ThemeToggle />
+          </nav>
         </div>
       </header>
 
-      <div
-        aria-hidden="true"
-        className="grid h-[calc(100%-76px)] grid-cols-[180px_minmax(0,1fr)_260px] gap-10 px-6 pb-24 pt-10 opacity-55 max-lg:grid-cols-[150px_minmax(0,1fr)] max-sm:grid-cols-1 sm:px-14"
-      >
-        <aside className="hidden border-r border-stone-200 pr-7 sm:block">
-          <div className="mb-6 h-2.5 w-16 rounded-full bg-stone-200" />
-          <div className="space-y-4">
-            {sidebarWidths.map((width) => (
-              <div key={width} className="flex items-center gap-3">
-                <span className="h-4 w-4 rounded bg-stone-200" />
-                <span
-                  className="h-2.5 rounded-full bg-stone-200"
-                  style={{ width: `${width}%` }}
-                />
-              </div>
+      <main className="page-shell">
+        <h1>Service Status</h1>
+        <section
+          className={`system-banner ${activeIncident ? `is-${activeIncident.type}` : 'is-operational'}`}
+          aria-live="polite"
+        >
+          <StatusMark level={activeIncident ? activeIncident.type : 'available'} size="large" />
+          <div>
+            <h2>{activeIncident?.message ?? 'No incidents declared'}</h2>
+            <p>
+              {activeIncident
+                ? 'We are actively investigating an incident affecting one or more services.'
+                : 'We are not actively mitigating any known incidents at this time.'}
+            </p>
+          </div>
+        </section>
+
+        <section className="section-block" aria-labelledby="live-data-heading">
+          <div className="section-heading">
+            <h2 id="live-data-heading">Live service data</h2>
+            <p>
+              This section shows live data exported from our monitoring system. It
+              indicates service health even if no incidents have been declared.
+            </p>
+          </div>
+          <ClusterMatrix />
+        </section>
+
+        <section className="section-block" aria-labelledby="services-heading">
+          <div className="section-heading services-heading">
+            <h2 id="services-heading">Services</h2>
+            {!dashboard.connected && (
+              <p className="connection-note">
+                Live monitoring is temporarily unavailable. Showing the service catalogue.
+              </p>
+            )}
+          </div>
+          <div className="service-grid">
+            {dashboard.services.map((service) => (
+              <Link
+                className="service-card"
+                href={`/services/${service.slug}`}
+                key={service.key}
+              >
+                <span>{service.name}</span>
+                <span className={`status-pill is-${service.level}`}>{service.label}</span>
+              </Link>
             ))}
           </div>
-          <div className="mb-6 mt-9 h-2.5 w-24 rounded-full bg-stone-200" />
-          <div className="space-y-4">
-            {sidebarWidths.slice(0, 3).map((width) => (
-              <span
-                key={width}
-                className="block h-2.5 rounded-full bg-stone-200"
-                style={{ width: `${width}%` }}
-              />
-            ))}
-          </div>
-        </aside>
-
-        <article className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-          <div className="space-y-3">
-            <div className="h-2.5 w-28 rounded-full bg-stone-200" />
-            <div className="h-7 w-4/5 rounded-lg bg-stone-200" />
-            <div className="h-7 w-3/5 rounded-lg bg-stone-200" />
-          </div>
-          <div className="min-h-[240px] flex-1 rounded-2xl bg-stone-200" />
-          <div className="flex items-center gap-3">
-            <span className="h-9 w-9 rounded-full bg-stone-200" />
-            <span className="h-2.5 w-28 rounded-full bg-stone-200" />
-          </div>
-          <div className="space-y-2">
-            {articleWidths.map((width) => (
-              <span
-                key={width}
-                className="block h-2.5 rounded-full bg-stone-200"
-                style={{ width: `${width}%` }}
-              />
-            ))}
-          </div>
-        </article>
-
-        <aside className="space-y-5 max-lg:hidden">
-          {[0, 1].map((card) => (
-            <div
-              key={card}
-              className="space-y-4 rounded-2xl border border-stone-200 bg-white/70 p-6"
-            >
-              <span className="block h-10 w-10 rounded-full bg-stone-200" />
-              <span className="block h-3 w-3/5 rounded-full bg-stone-200" />
-              <span className="block h-2.5 w-full rounded-full bg-stone-200" />
-              <span className="block h-2.5 w-4/5 rounded-full bg-stone-200" />
-              <span className="block h-8 w-24 rounded-lg bg-stone-200" />
-            </div>
-          ))}
-        </aside>
-      </div>
-
-      <section
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="absolute left-1/2 top-[clamp(96px,13vh,122px)] w-[min(620px,calc(100%-40px))] -translate-x-1/2 rounded-[18px] border border-stone-200 bg-white/95 px-5 py-5 shadow-[0_18px_50px_rgb(24_24_27/9%)] backdrop-blur-sm"
-      >
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-stone-500">
-          Building your site
-        </p>
-        <h1 className="text-xl font-semibold tracking-tight">
-          Your site is taking shape
-        </h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Your first version will appear here automatically when it’s ready.
-        </p>
-      </section>
-    </main>
+        </section>
+      </main>
+    </>
   );
 }
