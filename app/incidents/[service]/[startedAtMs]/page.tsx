@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header';
 import { formatDateTime, formatDuration } from '@/lib/format';
@@ -10,13 +11,13 @@ type PageProps = { params: Promise<{ service: string; startedAtMs: string }> };
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { service, startedAtMs } = await params;
   const incident = await getIncident(service, startedAtMs);
-  if (!incident) return { title: 'Incident not found · Service Status' };
+  if (!incident) return { title: 'Incident not found · Status' };
   const description = `${incident.status === 'resolved' ? 'Resolved' : 'Investigating'} availability incident for ${incident.serviceName}.`;
   return {
-    title: `${incident.title} · Service Status`,
+    title: `${incident.title} · Status`,
     description,
-    openGraph: { title: incident.title, description, images: [] },
-    twitter: { card: 'summary', title: incident.title, description, images: [] },
+    openGraph: { title: incident.title, description, images: ['/status-social-preview.png'] },
+    twitter: { card: 'summary_large_image', title: incident.title, description, images: ['/status-social-preview.png'] },
   };
 }
 
@@ -42,7 +43,7 @@ export default async function IncidentPage({ params }: PageProps) {
         </div>
         <section className="incident-detail-card">
           <div className="incident-detail-state">
-            <span className="resolved-mark" aria-hidden="true">✓</span>
+            <span className="resolved-mark" aria-hidden="true"><Check size={10} strokeWidth={3} /></span>
             <strong>{incident.status === 'resolved' ? 'Resolved' : 'Investigating'}</strong>
           </div>
           <p>

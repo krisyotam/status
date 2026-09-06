@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import { AutoRefresh } from '@/components/auto-refresh';
 import { ClusterMatrix } from '@/components/cluster-matrix';
 import { SiteHeader } from '@/components/site-header';
@@ -19,7 +20,7 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="page-shell">
-        <h1>Service Status</h1>
+        <h1>Status</h1>
         <section
           className={`system-banner ${activeIncident ? `is-${activeIncident.type}` : 'is-operational'}`}
           aria-live="polite"
@@ -68,7 +69,7 @@ export default async function Home() {
             ))}
           </div>
           <div className="history-link-row">
-            <Link href="/history">View incident history <span aria-hidden="true">›</span></Link>
+            <Link href="/history">View incident history <ChevronRight aria-hidden="true" size={15} /></Link>
           </div>
         </section>
       </main>

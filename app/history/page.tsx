@@ -5,10 +5,10 @@ import { SiteHeader } from '@/components/site-header';
 import { getAllIncidents } from '@/lib/gatus';
 
 export const metadata: Metadata = {
-  title: 'Incident History · Service Status',
+  title: 'Incident History · Status',
   description: 'Recent availability incidents across krisyotam.com services.',
-  openGraph: { images: [] },
-  twitter: { images: [] },
+  openGraph: { images: ['/status-social-preview.png'] },
+  twitter: { card: 'summary_large_image', images: ['/status-social-preview.png'] },
 };
 
 export default async function HistoryPage() {

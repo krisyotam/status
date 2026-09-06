@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Clock3, Rss } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 function timezoneLabel() {
@@ -16,17 +17,17 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link className="brand" href="/" aria-label="Service Status home">
+        <Link className="brand" href="/" aria-label="Status home">
           <Image src="/favicon.png" alt="" width="30" height="30" priority />
-          <span>Service Status</span>
+          <span>Status</span>
         </Link>
         <nav className="utility-nav" aria-label="Status utilities">
           <span className="utility-pill">
             Time: {timezoneLabel()}
-            <span className="clock-mark" aria-hidden="true" />
+            <Clock3 aria-hidden="true" size={14} strokeWidth={1.8} />
           </span>
           <Link className="utility-pill rss-link" href="/feed.xml">
-            RSS Feed <span aria-hidden="true">◔</span>
+            RSS Feed <Rss aria-hidden="true" size={14} strokeWidth={1.9} />
           </Link>
           <ThemeToggle />
         </nav>

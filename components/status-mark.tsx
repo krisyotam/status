@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import type { IncidentType, ServiceLevel } from '@/lib/gatus';
 
 export function StatusMark({
@@ -11,6 +12,8 @@ export function StatusMark({
     <span
       className={`status-mark is-${level} ${size === 'large' ? 'is-large' : ''}`}
       aria-hidden="true"
-    />
+    >
+      <Check size={size === 'large' ? 18 : 13} strokeWidth={2.5} />
+    </span>
   );
 }

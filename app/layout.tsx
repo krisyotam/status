@@ -3,18 +3,20 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://status.krisyotam.com'),
-  title: 'Service Status · krisyotam.com',
+  title: 'Status · krisyotam.com',
   description: 'Live availability and incident history for krisyotam.com services.',
   icons: { icon: '/favicon.png' },
   openGraph: {
-    title: 'Service Status · krisyotam.com',
+    title: 'Status · krisyotam.com',
     description: 'Live availability and incident history for krisyotam.com services.',
     type: 'website',
+    images: ['/status-social-preview.png'],
   },
   twitter: {
-    card: 'summary',
-    title: 'Service Status · krisyotam.com',
+    card: 'summary_large_image',
+    title: 'Status · krisyotam.com',
     description: 'Live availability and incident history for krisyotam.com services.',
+    images: ['/status-social-preview.png'],
   },
 };
 

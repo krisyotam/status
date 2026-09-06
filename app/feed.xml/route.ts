@@ -18,7 +18,7 @@ export async function GET() {
     return `<item><title>${escapeXml(incident.title)}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${new Date(incident.startedAt).toUTCString()}</pubDate><description>${escapeXml(description)}</description></item>`;
   }).join('');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>krisyotam.com Service Status</title><link>https://status.krisyotam.com</link><description>Availability incidents for krisyotam.com services.</description><lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}</channel></rss>`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>krisyotam.com Status</title><link>https://status.krisyotam.com</link><description>Availability incidents for krisyotam.com services.</description><lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}</channel></rss>`;
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/rss+xml; charset=utf-8',

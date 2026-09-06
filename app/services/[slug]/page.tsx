@@ -13,13 +13,13 @@ type PageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const detail = await getServiceDetails(slug);
-  if (!detail) return { title: 'Service not found · Service Status' };
+  if (!detail) return { title: 'Service not found · Status' };
   const description = `Live availability and recent incident history for ${detail.service.name}.`;
   return {
-    title: `${detail.service.name} · Service Status`,
+    title: `${detail.service.name} · Status`,
     description,
-    openGraph: { title: `${detail.service.name} · Service Status`, description, images: [] },
-    twitter: { card: 'summary', title: `${detail.service.name} · Service Status`, description, images: [] },
+    openGraph: { title: `${detail.service.name} · Status`, description, images: ['/status-social-preview.png'] },
+    twitter: { card: 'summary_large_image', title: `${detail.service.name} · Status`, description, images: ['/status-social-preview.png'] },
   };
 }
 
