@@ -40,8 +40,8 @@ export default async function Home() {
           <div className="section-heading">
             <h2 id="live-data-heading">Live service data</h2>
             <p>
-              This section shows live data exported from our monitoring system. It
-              indicates service health even if no incidents have been declared.
+              Stargate machines are shown with their assigned workload focus. Live
+              telemetry will replace these placeholder values when integration is connected.
             </p>
           </div>
           <ClusterMatrix />

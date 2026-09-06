@@ -1,17 +1,20 @@
-const clusterRows = [
-  { source: 'eu-west-1', endpoints: [[100, 100], [99.93, 100], [99.74, 100]] },
-  { source: 'us-east-1', endpoints: [[100, 100], [100, 100], [99.91, 100]] },
-  { source: 'us-west-2', endpoints: [[100, 100], [99.78, 100], [100, 100]] },
-] as const;
+import {
+  STARGATE_ENDPOINTS,
+  STARGATE_MACHINES,
+  type StargateRouteHealth,
+  type StargateWorkload,
+} from '@/lib/stargate';
 
-const clusterEndpoints = [
-  'eu-west-1.stargate',
-  'us-east-1.stargate',
-  'us-west-2.stargate',
-];
-
-function displayPercent(value: number) {
+function displayPercent(value: number | null) {
+  if (value === null) return '—';
   return value === 100 ? '100%' : `${value.toFixed(2)}%`;
+}
+
+function metricEntries(endpoint: StargateRouteHealth) {
+  return [
+    ['inference', endpoint.inference],
+    ['non-inference', endpoint.nonInference],
+  ] as const satisfies ReadonlyArray<readonly [StargateWorkload, number | null]>;
 }
 
 export function ClusterMatrix() {
@@ -23,27 +26,33 @@ export function ClusterMatrix() {
         </div>
         <div className="matrix-head">
           <span>Source</span>
-          {clusterEndpoints.map((endpoint) => <span key={endpoint}>{endpoint}</span>)}
+          {STARGATE_ENDPOINTS.map((endpoint) => <span key={endpoint}>{endpoint}</span>)}
         </div>
-        {clusterRows.map((row) => (
-          <div className="matrix-row" key={row.source}>
-            <span className="matrix-source">{row.source}</span>
-            {row.endpoints.map((pair, endpointIndex) => (
-              <div className="matrix-cell" key={`${row.source}-${clusterEndpoints[endpointIndex]}`}>
-                {pair.map((value, metricIndex) => (
+        {STARGATE_MACHINES.map((machine) => (
+          <div className="matrix-row" key={machine.id}>
+            <span className="matrix-source">
+              <strong>{machine.id}</strong>
+              <small>{machine.role}</small>
+            </span>
+            {machine.endpoints.map((endpoint, endpointIndex) => (
+              <div className="matrix-cell" key={`${machine.id}-${STARGATE_ENDPOINTS[endpointIndex]}`}>
+                {metricEntries(endpoint).map(([workload, value]) => (
                   <div
-                    className={`matrix-metric ${value < 100 ? 'is-degraded' : ''}`}
-                    key={metricIndex === 0 ? 'inference' : 'non-inference'}
+                    className={`matrix-metric ${value === null ? 'is-unassigned' : ''} ${machine.focus === workload ? 'is-focused' : ''}`}
+                    key={workload}
+                    title={value === null ? `Not assigned to ${machine.id}` : `${machine.id} ${workload} availability`}
                   >
                     <span className="matrix-value">{displayPercent(value)}</span>
-                    <span className="matrix-label">{metricIndex === 0 ? 'Inference' : 'Non-inference'}</span>
+                    <span className="matrix-label">{workload === 'inference' ? 'Inference' : 'Non-inference'}</span>
                   </div>
                 ))}
               </div>
             ))}
           </div>
         ))}
-        <div className="matrix-footer">Stargate cluster sample data · live integration pending</div>
+        <div className="matrix-footer">
+          us-central-1/2: server workloads · us-central-3: local-model inference · telemetry pending
+        </div>
       </div>
     </div>
   );

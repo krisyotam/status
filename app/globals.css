@@ -211,7 +211,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   scrollbar-width: thin;
 }
 .cluster-matrix { min-width: 760px; }
-.matrix-title, .matrix-head, .matrix-row { display: grid; grid-template-columns: 112px repeat(3, minmax(0, 1fr)); }
+.matrix-title, .matrix-head, .matrix-row { display: grid; grid-template-columns: 126px repeat(3, minmax(0, 1fr)); }
 .matrix-title, .matrix-head {
   min-height: 39px;
   border-bottom: 1px solid var(--line);
@@ -222,7 +222,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .matrix-title > span:first-child, .matrix-head > span:first-child, .matrix-source { border-right: 1px solid var(--line); }
 .matrix-title .endpoint-title { grid-column: 2 / 5; }
 .matrix-row { min-height: 86px; }
-.matrix-source { color: var(--ink); font-size: 12px; }
+.matrix-source { flex-direction: column; gap: 2px; color: var(--ink); font-size: 12px; }
+.matrix-source strong { font-weight: 600; }
+.matrix-source small { color: var(--muted); font-size: 10px; }
 .matrix-cell {
   min-width: 0;
   margin: 7px 4px;
@@ -245,6 +247,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .matrix-metric + .matrix-metric { border-left: 1px solid rgba(22, 104, 20, 0.2); }
 .matrix-metric.is-degraded { background-color: var(--amber-bright); }
+.matrix-metric.is-unassigned {
+  background-color: color-mix(in srgb, var(--unknown) 18%, var(--panel-solid));
+  background-image: repeating-linear-gradient(130deg, color-mix(in srgb, var(--unknown) 8%, transparent) 0, color-mix(in srgb, var(--unknown) 8%, transparent) 2px, transparent 2px, transparent 7px);
+  color: var(--muted);
+}
 .matrix-value, .matrix-label { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
 .matrix-value { font-size: 13px; text-shadow: 0 1px 1px rgba(0,0,0,.13); }
 .matrix-label {
@@ -253,6 +260,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   letter-spacing: -0.02em;
 }
 .matrix-metric.is-degraded .matrix-label { background: color-mix(in srgb, var(--amber-deep) 88%, transparent); }
+.matrix-metric.is-unassigned .matrix-label { background: color-mix(in srgb, var(--unknown) 12%, transparent); }
 .matrix-footer {
   min-height: 31px;
   padding: 0 10px;
