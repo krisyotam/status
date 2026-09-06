@@ -1,22 +1,11 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { AutoRefresh } from '@/components/auto-refresh';
 import { ClusterMatrix } from '@/components/cluster-matrix';
+import { SiteHeader } from '@/components/site-header';
 import { StatusMark } from '@/components/status-mark';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { getStatusDashboard } from '@/lib/gatus';
 
 export const revalidate = 30;
-
-function timezoneLabel() {
-  const part = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    timeZoneName: 'short',
-  })
-    .formatToParts(new Date())
-    .find(({ type }) => type === 'timeZoneName');
-  return part?.value ?? 'CT';
-}
 
 export default async function Home() {
   const dashboard = await getStatusDashboard();
@@ -27,24 +16,7 @@ export default async function Home() {
   return (
     <>
       <AutoRefresh fetchedAt={dashboard.fetchedAt} />
-      <header className="site-header">
-        <div className="header-inner">
-          <Link className="brand" href="/" aria-label="Service Status home">
-            <Image src="/favicon.png" alt="" width="30" height="30" priority />
-            <span>Service Status</span>
-          </Link>
-          <nav className="utility-nav" aria-label="Status utilities">
-            <span className="utility-pill">
-              Time: {timezoneLabel()}
-              <span className="clock-mark" aria-hidden="true" />
-            </span>
-            <Link className="utility-pill rss-link" href="/feed.xml">
-              RSS Feed <span aria-hidden="true">◔</span>
-            </Link>
-            <ThemeToggle />
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="page-shell">
         <h1>Service Status</h1>
@@ -94,6 +66,9 @@ export default async function Home() {
                 <span className={`status-pill is-${service.level}`}>{service.label}</span>
               </Link>
             ))}
+          </div>
+          <div className="history-link-row">
+            <Link href="/history">View incident history <span aria-hidden="true">›</span></Link>
           </div>
         </section>
       </main>

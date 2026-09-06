@@ -1,7 +1,24 @@
 import 'server-only';
+import {
+  incidentsFromEvents,
+  serviceLabel,
+  serviceLevel,
+  slugify,
+  uptimeDays,
+  type IncidentType,
+  type StatusEvent,
+  type StatusIncident,
+  type StatusService,
+  type UptimeDay,
+} from '@/lib/status-model';
 
-export type ServiceLevel = 'available' | 'degraded' | 'unavailable' | 'unknown';
-export type IncidentType = 'outage' | 'warning' | 'information' | 'operational' | 'none';
+export type {
+  IncidentType,
+  ServiceLevel,
+  StatusIncident,
+  StatusService,
+  UptimeDay,
+} from '@/lib/status-model';
 
 type GatusResult = { success?: boolean; timestamp?: string };
 type GatusEndpoint = {
@@ -9,6 +26,7 @@ type GatusEndpoint = {
   group?: string;
   key?: string;
   results?: GatusResult[];
+  events?: StatusEvent[];
 };
 type GatusAnnouncement = {
   timestamp?: string;
@@ -17,21 +35,13 @@ type GatusAnnouncement = {
   archived?: boolean;
 };
 
-export type StatusService = {
-  name: string;
-  group: string;
-  key: string;
-  slug: string;
-  level: ServiceLevel;
-  label: 'Available' | 'Degraded' | 'Unavailable' | 'Unknown';
-  checkedAt: string | null;
-};
 export type StatusAnnouncement = {
   timestamp: string;
   type: IncidentType;
   message: string;
   archived: boolean;
 };
+
 export type StatusDashboard = {
   connected: boolean;
   fetchedAt: string;
@@ -39,30 +49,22 @@ export type StatusDashboard = {
   announcements: StatusAnnouncement[];
 };
 
+export type ServiceDetails = {
+  service: StatusService;
+  uptime: number | null;
+  days: UptimeDay[];
+  incidents: StatusIncident[];
+};
+
 const fallbackServiceNames = [
-  'krisyotam.com', 'notes.krisyotam.com', 'videos.krisyotam.com',
-  'git.krisyotam.com', 'gist.krisyotam.com', 'shop.krisyotam.com', 'photos.krisyotam.com',
+  'krisyotam.com',
+  'notes.krisyotam.com',
+  'videos.krisyotam.com',
+  'git.krisyotam.com',
+  'gist.krisyotam.com',
+  'shop.krisyotam.com',
+  'photos.krisyotam.com',
 ];
-
-export function slugify(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
-
-function serviceLevel(results: GatusResult[]): ServiceLevel {
-  if (results.length === 0) return 'unknown';
-  const recent = results.slice(-3);
-  const successes = recent.filter((result) => result.success).length;
-  if (successes === recent.length) return 'available';
-  if (successes === 0) return 'unavailable';
-  return 'degraded';
-}
-
-function serviceLabel(level: ServiceLevel): StatusService['label'] {
-  if (level === 'available') return 'Available';
-  if (level === 'degraded') return 'Degraded';
-  if (level === 'unavailable') return 'Unavailable';
-  return 'Unknown';
-}
 
 function normalizeEndpoint(endpoint: GatusEndpoint, index: number): StatusService {
   const name = endpoint.name?.trim() || `Service ${index + 1}`;
@@ -112,30 +114,80 @@ function fallbackDashboard(): StatusDashboard {
   };
 }
 
+function gatusBaseUrl() {
+  return (process.env.GATUS_URL ?? 'https://status.krisyotam.com').replace(/\/$/, '');
+}
+
+async function fetchJson(path: string): Promise<unknown> {
+  const response = await fetch(`${gatusBaseUrl()}${path}`, {
+    next: { revalidate: 30 },
+    signal: AbortSignal.timeout(4_500),
+  });
+  if (!response.ok) throw new Error(`Gatus returned ${response.status}`);
+  return response.json();
+}
+
 export async function getStatusDashboard(): Promise<StatusDashboard> {
-  const baseUrl = (process.env.GATUS_URL ?? 'https://status.krisyotam.com').replace(/\/$/, '');
   try {
-    const [statusesResponse, configResponse] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/endpoints/statuses`, {
-        next: { revalidate: 30 },
-        signal: AbortSignal.timeout(4_500),
-      }),
-      fetch(`${baseUrl}/api/v1/config`, {
-        next: { revalidate: 30 },
-        signal: AbortSignal.timeout(4_500),
-      }),
+    const [statuses, config] = await Promise.all([
+      fetchJson('/api/v1/endpoints/statuses'),
+      fetchJson('/api/v1/config').catch(() => null),
     ]);
-    if (!statusesResponse.ok) throw new Error(`Gatus returned ${statusesResponse.status}`);
-    const statuses: unknown = await statusesResponse.json();
-    const config: unknown = configResponse.ok ? await configResponse.json() : null;
     if (!Array.isArray(statuses)) throw new Error('Invalid Gatus status payload');
     return {
       connected: true,
       fetchedAt: new Date().toISOString(),
-      services: (statuses as GatusEndpoint[]).map(normalizeEndpoint).sort((a, b) => a.name.localeCompare(b.name)),
+      services: (statuses as GatusEndpoint[])
+        .map(normalizeEndpoint)
+        .sort((a, b) => a.name.localeCompare(b.name)),
       announcements: normalizeAnnouncements(config),
     };
   } catch {
     return fallbackDashboard();
   }
+}
+
+export async function getServiceDetails(slug: string): Promise<ServiceDetails | null> {
+  const dashboard = await getStatusDashboard();
+  const service = dashboard.services.find((candidate) => candidate.slug === slug);
+  if (!service || !dashboard.connected) return null;
+
+  try {
+    const [endpointPayload, uptimePayload] = await Promise.all([
+      fetchJson(`/api/v1/endpoints/${encodeURIComponent(service.key)}/statuses`),
+      fetchJson(`/api/v1/endpoints/${encodeURIComponent(service.key)}/uptimes/30d`).catch(() => null),
+    ]);
+    if (!endpointPayload || typeof endpointPayload !== 'object') return null;
+    const endpoint = endpointPayload as GatusEndpoint;
+    const incidents = incidentsFromEvents(
+      service,
+      Array.isArray(endpoint.events) ? endpoint.events : [],
+    );
+    return {
+      service,
+      uptime: typeof uptimePayload === 'number' ? uptimePayload : null,
+      days: uptimeDays(incidents),
+      incidents,
+    };
+  } catch {
+    return { service, uptime: null, days: uptimeDays([]), incidents: [] };
+  }
+}
+
+export async function getAllIncidents(): Promise<StatusIncident[]> {
+  const dashboard = await getStatusDashboard();
+  if (!dashboard.connected) return [];
+  const details = await Promise.all(dashboard.services.map((service) => getServiceDetails(service.slug)));
+  return details
+    .flatMap((detail) => detail?.incidents ?? [])
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+}
+
+export async function getIncident(
+  serviceSlug: string,
+  startedAtMs: string,
+): Promise<StatusIncident | null> {
+  const details = await getServiceDetails(serviceSlug);
+  if (!details) return null;
+  return details.incidents.find((incident) => String(Date.parse(incident.startedAt)) === startedAtMs) ?? null;
 }
