@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Check, ChevronRight } from 'lucide-react';
-import { formatDateTime, formatDuration } from '@/lib/format';
+import { FormattedDateTime } from '@/components/formatted-date-time';
+import { formatDuration } from '@/lib/format';
 import type { StatusIncident } from '@/lib/gatus';
 
 export function IncidentCard({ incident }: { incident: StatusIncident }) {
@@ -9,7 +10,7 @@ export function IncidentCard({ incident }: { incident: StatusIncident }) {
       className="incident-card"
       href={`/incidents/${incident.serviceSlug}/${Date.parse(incident.startedAt)}`}
     >
-      <time dateTime={incident.startedAt}>{formatDateTime(incident.startedAt)}</time>
+      <FormattedDateTime value={incident.startedAt} />
       <div className="incident-title">
         <span className="incident-dot" aria-hidden="true" />
         <strong>{incident.title}</strong>

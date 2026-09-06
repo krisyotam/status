@@ -1,13 +1,17 @@
-export function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
+export function formatDateTime(
+  value: string,
+  timeZone = 'Etc/GMT+6',
+  timeZoneLabel = 'CST',
+) {
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    timeZone,
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZoneName: 'short',
   }).format(new Date(value));
+  return `${formatted} ${timeZoneLabel}`;
 }
 
 export function formatDuration(durationMs: number | null) {

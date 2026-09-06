@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { FormattedDateTime } from '@/components/formatted-date-time';
 import { SiteHeader } from '@/components/site-header';
-import { formatDateTime, formatDuration } from '@/lib/format';
+import { formatDuration } from '@/lib/format';
 import { getIncident } from '@/lib/gatus';
 
 type PageProps = { params: Promise<{ service: string; startedAtMs: string }> };
@@ -37,7 +38,7 @@ export default async function IncidentPage({ params }: PageProps) {
         <div className="incident-detail-heading">
           <span className="incident-dot" aria-hidden="true" />
           <div>
-            <p>{formatDateTime(incident.startedAt)}</p>
+            <p><FormattedDateTime value={incident.startedAt} /></p>
             <h1>{incident.title}</h1>
           </div>
         </div>
@@ -52,8 +53,8 @@ export default async function IncidentPage({ params }: PageProps) {
               : `Monitoring is currently reporting that ${incident.serviceName} is unavailable.`}
           </p>
           <dl>
-            <div><dt>Started</dt><dd>{formatDateTime(incident.startedAt)}</dd></div>
-            <div><dt>Resolved</dt><dd>{incident.resolvedAt ? formatDateTime(incident.resolvedAt) : 'Ongoing'}</dd></div>
+            <div><dt>Started</dt><dd><FormattedDateTime value={incident.startedAt} /></dd></div>
+            <div><dt>Resolved</dt><dd>{incident.resolvedAt ? <FormattedDateTime value={incident.resolvedAt} /> : 'Ongoing'}</dd></div>
             <div><dt>Duration</dt><dd>{formatDuration(incident.durationMs)}</dd></div>
             <div><dt>Affected service</dt><dd><Link href={`/services/${incident.serviceSlug}`}>{incident.serviceName}</Link></dd></div>
           </dl>

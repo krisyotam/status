@@ -1,17 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock3, Rss } from 'lucide-react';
+import { Rss } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
-
-function timezoneLabel() {
-  const part = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    timeZoneName: 'short',
-  })
-    .formatToParts(new Date())
-    .find(({ type }) => type === 'timeZoneName');
-  return part?.value ?? 'CT';
-}
+import { TimezoneSelect } from '@/components/timezone-select';
 
 export function SiteHeader() {
   return (
@@ -22,11 +13,8 @@ export function SiteHeader() {
           <span>Status</span>
         </Link>
         <nav className="utility-nav" aria-label="Status utilities">
-          <span className="utility-pill">
-            Time: {timezoneLabel()}
-            <Clock3 aria-hidden="true" size={14} strokeWidth={1.8} />
-          </span>
-          <Link className="utility-pill rss-link" href="/feed.xml">
+          <TimezoneSelect />
+          <Link className="utility-pill rss-link" href="/feed.xml" aria-label="Open RSS feed">
             RSS Feed <Rss aria-hidden="true" size={14} strokeWidth={1.9} />
           </Link>
           <ThemeToggle />

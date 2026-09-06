@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { TimezoneProvider } from '@/components/timezone-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
-      <body>{children}</body>
+      <body><TimezoneProvider>{children}</TimezoneProvider></body>
     </html>
   );
 }
