@@ -246,6 +246,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background-image: repeating-linear-gradient(130deg, rgba(255,255,255,.045) 0, rgba(255,255,255,.045) 2px, transparent 2px, transparent 7px);
 }
 .matrix-metric + .matrix-metric { border-left: 1px solid rgba(22, 104, 20, 0.2); }
+.matrix-metric.is-inference:not(.is-unassigned) { background-color: var(--amber-bright); }
 .matrix-metric.is-degraded { background-color: var(--amber-bright); }
 .matrix-metric.is-unassigned {
   background-color: color-mix(in srgb, var(--unknown) 18%, var(--panel-solid));
@@ -260,6 +261,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   letter-spacing: -0.02em;
 }
 .matrix-metric.is-degraded .matrix-label { background: color-mix(in srgb, var(--amber-deep) 88%, transparent); }
+.matrix-metric.is-inference:not(.is-unassigned) .matrix-label { background: color-mix(in srgb, var(--amber-deep) 88%, transparent); }
 .matrix-metric.is-unassigned .matrix-label { background: color-mix(in srgb, var(--unknown) 12%, transparent); }
 .matrix-footer {
   min-height: 31px;

@@ -38,7 +38,7 @@ export function ClusterMatrix() {
               <div className="matrix-cell" key={`${machine.id}-${STARGATE_ENDPOINTS[endpointIndex]}`}>
                 {metricEntries(endpoint).map(([workload, value]) => (
                   <div
-                    className={`matrix-metric ${value === null ? 'is-unassigned' : ''} ${machine.focus === workload ? 'is-focused' : ''}`}
+                    className={`matrix-metric is-${workload} ${value === null ? 'is-unassigned' : ''} ${machine.focus === workload ? 'is-focused' : ''}`}
                     key={workload}
                     title={value === null ? `Not assigned to ${machine.id}` : `${machine.id} ${workload} availability`}
                   >
