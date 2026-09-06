@@ -24,9 +24,23 @@ npm run build
 
 ## Production
 
-The root `docker-compose.yml` runs Gatus on port 8091 and the standalone Next.js
-UI on port 8092. Point the `status.krisyotam.com` reverse proxy at port 8092 when
-the custom frontend is ready to replace the built-in Gatus UI.
+This repository contains only the Next.js interface. Gatus is not vendored here;
+run it independently from the current upstream image or release, then provide its
+base URL through `GATUS_URL`.
+
+```bash
+docker pull twinproduction/gatus:latest
+docker build -t status-ui .
+docker run --rm -p 8092:8092 \
+  -e PORT=8092 \
+  -e GATUS_URL=http://host.docker.internal:8091 \
+  status-ui
+```
+
+Point the `status.krisyotam.com` reverse proxy at the Next.js UI on port 8092.
+The preserved Gatus fork and deployment configuration live separately at
+[`krisyotam/gatus`](https://github.com/krisyotam/gatus), tracking
+[`TwiN/gatus`](https://github.com/TwiN/gatus) as upstream.
 
 The live-service matrix currently models three Stargate machines: `us-central-1`
 and `us-central-2` are non-inference servers, while `us-central-3` is dedicated
