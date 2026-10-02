@@ -46,23 +46,29 @@ export default async function ServicePage({ params }: PageProps) {
         <section className="summary-grid" aria-label="30 day service summary">
           <div className="summary-card">
             <h2>Up Time <span>30 Days</span></h2>
-            <UptimeStrip days={detail.days} />
+            {detail.historyAvailable ? (
+              <UptimeStrip days={detail.days} />
+            ) : (
+              <p>Availability history is temporarily unavailable.</p>
+            )}
             <p className="summary-value">{formatUptime(detail.uptime)}</p>
           </div>
           <div className="summary-card issues-summary">
             <h2>Issues <span>30 Days</span></h2>
-            <div className="issue-counts">
+            {detail.historyAvailable ? <div className="issue-counts">
               <span><i className="incident-dot is-amber" /> <b>0</b> Disruption</span>
               <span><i className="incident-dot is-blue" /> <b>0</b> Info</span>
               <span><i className="incident-dot" /> <b>{monthIncidents.length}</b> Outage</span>
-            </div>
+            </div> : <p>Incident counts are temporarily unavailable.</p>}
           </div>
         </section>
 
         <section className="past-issues" aria-labelledby="past-issues-heading">
           <h2 id="past-issues-heading">Past Issues</h2>
           <div className="incident-list">
-            {detail.incidents.length ? (
+            {!detail.historyAvailable ? (
+              <div className="empty-card">Incident history is temporarily unavailable. Please try again later.</div>
+            ) : detail.incidents.length ? (
               detail.incidents.map((incident) => <IncidentCard incident={incident} key={incident.id} />)
             ) : (
               <div className="empty-card">No incidents have been recorded for this service.</div>

@@ -52,6 +52,7 @@ export type StatusDashboard = {
 export type ServiceDetails = {
   service: StatusService;
   uptime: number | null;
+  historyAvailable: boolean;
   days: UptimeDay[];
   incidents: StatusIncident[];
 };
@@ -157,7 +158,9 @@ export async function getServiceDetails(slug: string): Promise<ServiceDetails | 
       fetchJson(`/api/v1/endpoints/${encodeURIComponent(service.key)}/statuses`),
       fetchJson(`/api/v1/endpoints/${encodeURIComponent(service.key)}/uptimes/30d`).catch(() => null),
     ]);
-    if (!endpointPayload || typeof endpointPayload !== 'object') return null;
+    if (!endpointPayload || typeof endpointPayload !== 'object' || Array.isArray(endpointPayload)) {
+      throw new Error('Invalid Gatus endpoint payload');
+    }
     const endpoint = endpointPayload as GatusEndpoint;
     const incidents = incidentsFromEvents(
       service,
@@ -165,12 +168,13 @@ export async function getServiceDetails(slug: string): Promise<ServiceDetails | 
     );
     return {
       service,
+      historyAvailable: true,
       uptime: typeof uptimePayload === 'number' ? uptimePayload : null,
       days: uptimeDays(incidents),
       incidents,
     };
   } catch {
-    return { service, uptime: null, days: uptimeDays([]), incidents: [] };
+    return { service, uptime: null, historyAvailable: false, days: [], incidents: [] };
   }
 }
 
